@@ -4,17 +4,19 @@
 
 <img src="assets/QingDeskIcon.png" width="128" alt="QingDesk app icon">
 
-A lightweight native macOS home screen for your favorite apps. QingDesk combines a clock, an app grid, search, pagination, and a small shortcut dock. Click an app to launch it, even when it is absent from the desktop or the system Dock.
+A lightweight native macOS home screen for a tidier desktop and easier access to your favorite apps. QingDesk brings app shortcuts together with a clock, search, pagination, and a small shortcut dock. Click an app to launch it, with optional window layouts and computer-use support when you need them.
 
 Built with SwiftUI and AppKit, with no third-party Swift packages or runtime dependencies. Requires macOS 14 or later.
 
 ## Why QingDesk
 
-QingDesk began with a practical need: make apps easier to find when using computer-use agents. While exploring Hermes and cua-driver workflows, we wanted a clear, searchable launch point for apps that might be closed or absent from the desktop and Dock.
+QingDesk grew from a simple wish: keep the desktop tidy and make favorite apps easier to find. As an app collection grows, shortcuts can become scattered across the desktop, Dock, and Applications folder. We wanted one clear home screen for these launch controls, so the desktop and system Dock can stay simple.
 
-We brought favorite apps together on a simple home screen. People can click them directly; agents can find launch controls through app names, search, and accessibility identifiers. Search and pagination handle larger app collections, and window layouts help when a task needs multiple apps.
+Once favorites are configured, open QingDesk and click to launch them. Search and pagination handle larger collections, a shortcut dock keeps frequent choices close, and window layouts help organize tasks that use multiple apps. Everyday actions should feel easy, with a simple, comfortable interface.
 
-We want QingDesk to stay lightweight: simple configuration, a clear interface, native macOS capabilities, and optional window layouts and MCP integration. By sharing the project, we hope to work with others exploring computer use and make a shared desktop easier for people and agents to operate. A clear app launcher is one small step toward that goal.
+Computer use is another use case. Clear app names, search controls, and accessibility identifiers can also help agents such as Hermes and cua-driver find the software they need. People and agents can share the same launch controls.
+
+We want QingDesk to stay lightweight: simple configuration, a clear interface, native macOS capabilities, and optional window layouts and MCP integration. By sharing the project, we hope to build a tidy, convenient desktop tool with the community that also works well with automation.
 
 ## Screenshots
 
