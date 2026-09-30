@@ -8,6 +8,14 @@ A lightweight native macOS home screen for your favorite apps. QingDesk combines
 
 Built with SwiftUI and AppKit, with no third-party Swift packages or runtime dependencies. Requires macOS 14 or later.
 
+## Why QingDesk
+
+QingDesk began with a practical need: make apps easier to find when using computer-use agents. While exploring Hermes and cua-driver workflows, we wanted a clear, searchable launch point for apps that might be closed or absent from the desktop and Dock.
+
+We brought favorite apps together on a simple home screen. People can click them directly; agents can find launch controls through app names, search, and accessibility identifiers. Search and pagination handle larger app collections, and window layouts help when a task needs multiple apps.
+
+We want QingDesk to stay lightweight: simple configuration, a clear interface, native macOS capabilities, and optional window layouts and MCP integration. By sharing the project, we hope to work with others exploring computer use and make a shared desktop easier for people and agents to operate. A clear app launcher is one small step toward that goal.
+
 ## Screenshots
 
 The home screen combines a clock, search, favorite apps, pagination, and a shortcut dock.
