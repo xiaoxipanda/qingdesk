@@ -8,6 +8,18 @@ A lightweight native macOS home screen for your favorite apps. QingDesk combines
 
 Built with SwiftUI and AppKit, with no third-party Swift packages or runtime dependencies. Requires macOS 14 or later.
 
+## Screenshots
+
+The home screen combines a clock, search, favorite apps, pagination, and a shortcut dock.
+
+<img src="assets/screenshots/home.jpg" width="1000" alt="QingDesk home screen with a clock, app search, favorite app grid, pagination, and shortcut dock">
+
+Settings let you find and add installed apps, reorder favorites, and star apps for the shortcut dock.
+
+<img src="assets/screenshots/settings.jpg" width="720" alt="QingDesk settings showing app search, add controls, reordering, and shortcut dock stars">
+
+These are screenshots of the running app. The app list depends on your installed software and configuration.
+
 ## Install
 
 Download `QingDesk-macOS.zip` from [Releases](https://github.com/xiaoxipanda/qingdesk/releases), extract it, and move `轻桌.app` to Applications or `~/Applications`.
@@ -67,4 +79,4 @@ The service must run on the Mac being controlled. Closing the app window leaves 
 
 ## License and artwork
 
-Source code is released under the [MIT License](LICENSE). The app icon was generated with built-in imagegen; its [source](assets/QingDeskIcon.png) and [prompt](assets/icon-prompt.md) are included. Icons belonging to the user's installed third-party apps are read locally and are not distributed in this repository.
+Source code is released under the [MIT License](LICENSE). The app icon was generated with built-in imagegen; its [source](assets/QingDeskIcon.png) and [prompt](assets/icon-prompt.md) are included. Third-party app icons are read from locally installed apps. Names and icons visible in screenshots illustrate the interface and belong to their respective owners; this repository does not provide standalone assets or installers for those apps.

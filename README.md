@@ -6,6 +6,18 @@
 
 一个轻量的 macOS 原生应用主页：时钟、常用应用图标和底部快捷栏。点击图标就能打开软件，不依赖软件是否在桌面或系统 Dock 中。SwiftUI + AppKit，无第三方运行时，支持 macOS 14 及以上。
 
+## 界面预览
+
+首页展示时钟、搜索、常用应用和底部快捷栏；应用较多时支持分页。
+
+<img src="assets/screenshots/home.jpg" width="1000" alt="轻桌首页：时钟、应用搜索、常用应用网格、分页和底部快捷栏">
+
+在设置中添加应用、调整顺序，并通过星标选择底部快捷栏的应用。
+
+<img src="assets/screenshots/settings.jpg" width="720" alt="轻桌常用应用设置：应用筛选、添加、排序和快捷栏星标">
+
+以上为实际运行截图，应用列表取决于本机安装的软件和个人配置。
+
 ## 安装
 
 从 [Releases](https://github.com/xiaoxipanda/qingdesk/releases) 下载 `QingDesk-macOS.zip`，解压后将 `轻桌.app` 放入「应用程序」或 `~/Applications`。
@@ -91,4 +103,4 @@ helper 可以后台启动工作台自身；`--no-autostart` 关闭这一行为�
 
 源码以 [MIT](LICENSE) 许可证发布。应用图标使用内置 imagegen 生成，[源图](assets/QingDeskIcon.png) 和 [生成描述](assets/icon-prompt.md) 随项目提供。
 
-首页展示的是用户本机安装应用的图标；这些第三方应用图标不随本仓库分发。
+首页读取用户本机安装应用的图标。截图中的第三方应用名称和图标仅用于展示界面，相关商标和图标归各自权利人所有；仓库不提供这些应用的独立图标素材或安装包。
