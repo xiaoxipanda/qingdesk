@@ -63,7 +63,7 @@ Only the current page is instantiated in the accessibility tree. QingDesk provid
 
 Settings include side-by-side, stacked, primary/secondary, four-window, and single-window layouts, with adjustable gaps and display selection. Window arrangement requires macOS Accessibility permission; ordinary app launching does not.
 
-The action button and result stay visible at the bottom of settings while the options scroll. During execution, the app shows the current step and a countdown when waiting for a window. Completion shows a success message; failures explain the cause. The preview and app menus only configure the layout and do not execute it.
+The action button and result stay visible at the bottom of settings while the options scroll. During execution, the app shows the current step and a countdown when waiting for a window. On success, QingDesk hides and brings the arranged app windows to the front so you can see the result on the macOS desktop. Click QingDesk in the Dock to return to the home screen, then open layout settings to restore the previous layout. Failures keep settings open and explain the cause. The preview and app menus only configure the layout and do not execute it.
 
 Layouts arrange regular desktop windows. They do not create system full-screen Split View or change Spaces. The app verifies window frames, attempts rollback if a target rejects its size, and can restore frames from the last successful layout. Full-screen windows, ambiguous window selection, or app-specific minimum sizes may prevent a layout.
 

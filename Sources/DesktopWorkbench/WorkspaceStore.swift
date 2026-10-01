@@ -284,9 +284,15 @@ final class WorkspaceStore: ObservableObject {
         return ["ok": true, "verified": true]
     }
 
-    func applyCurrent() async {
-        do { _ = try await applyLayout(appIDs: slots, preset: preset, screenIndex: selectedScreen) }
-        catch { report(error) }
+    @discardableResult
+    func applyCurrent(revealWindows: Bool = false) async -> Bool {
+        do {
+            _ = try await applyLayout(appIDs: slots, preset: preset, screenIndex: selectedScreen)
+            if revealWindows {
+                try NativeDesktop.reveal(undoWindows)
+            }
+            return true
+        } catch { report(error); return false }
     }
     func runScene(_ scene: WorkspaceScene) async {
         loadScene(scene)

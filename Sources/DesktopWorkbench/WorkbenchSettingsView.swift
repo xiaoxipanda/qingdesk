@@ -122,7 +122,7 @@ struct WorkbenchSettingsView: View {
 
     private var layoutSettings: some View {
         VStack(alignment: .leading, spacing: 10) {
-            Text("选择布局和应用，再点击底部按钮执行。预览和下拉选择不会启动应用。")
+            Text("在 macOS 桌面排列所选软件窗口。成功后自动收起轻桌，显示实际窗口；此处仅为预览。")
                 .font(.system(size: 12)).foregroundStyle(Theme.muted)
             if !store.accessibilityGranted {
                 HStack {
@@ -168,7 +168,12 @@ struct WorkbenchSettingsView: View {
                 }
                 PrimaryButton(title: store.isBusy ? "正在执行…" : "启动并应用布局",
                               disabled: store.isBusy || store.slots.contains("") || !store.accessibilityGranted) {
-                    Task { await store.applyCurrent() }
+                    Task {
+                        if await store.applyCurrent(revealWindows: true) {
+                            dismiss()
+                            NSApp.hide(nil)
+                        }
+                    }
                 }.accessibilityIdentifier("layout.apply")
             }
         }

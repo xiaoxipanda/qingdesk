@@ -217,6 +217,26 @@ enum NativeDesktop {
         }
     }
 
+    static func reveal(_ windows: [DesktopWindow]) throws {
+        var lastApp: NSRunningApplication?
+        for window in windows {
+            guard let app = NSRunningApplication(processIdentifier: window.pid), !app.isTerminated else {
+                throw WorkbenchFailure("window_stale", "「\(window.title)」已关闭，请重新应用布局。")
+            }
+            app.unhide()
+            guard AXUIElementPerformAction(window.element, kAXRaiseAction as CFString) == .success else {
+                throw WorkbenchFailure("window_reveal_failed", "窗口已排列，但无法将「\(window.title)」显示到前台。请切换到该应用查看。")
+            }
+            lastApp = app
+        }
+        if let app = lastApp {
+            // Hand focus to one app after raising all targets; repeated activation competes for focus.
+            NSApp.yieldActivation(to: app)
+            // Activation is best effort; the raised windows remain visible when QingDesk hides.
+            _ = app.activate(from: .current, options: [])
+        }
+    }
+
     static func screensJSON() -> [[String: Any]] {
         let top = NSScreen.screens.first?.frame.maxY ?? 0
         return NSScreen.screens.enumerated().map { index, screen in
