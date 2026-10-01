@@ -68,7 +68,7 @@ struct LayoutPanel: View {
                     Image(systemName: "chevron.down").font(.system(size: 8)).foregroundStyle(Theme.muted)
                 }.padding(9).background(Theme.background, in: RoundedRectangle(cornerRadius: 8))
             }.menuStyle(.borderlessButton).disabled(store.isBusy).accessibilityLabel("选择\(store.preset.slotLabels[index])应用")
-        }
+        }.frame(maxWidth: .infinity, alignment: .leading)
     }
     private var preview: some View {
         GeometryReader { proxy in
