@@ -27,6 +27,7 @@ struct WorkbenchSettingsView: View {
             }.pickerStyle(.segmented)
             if page == 0 { applicationSettings }
             else { layoutSettings }
+            if page == 1 { layoutActions }
             HStack {
                 Text("设置自动保存").font(.system(size: 11)).foregroundStyle(Theme.muted)
                 Spacer()
@@ -120,29 +121,56 @@ struct WorkbenchSettingsView: View {
     }
 
     private var layoutSettings: some View {
-        ScrollView {
-            VStack(alignment: .leading, spacing: 15) {
-                Text("需要时再分屏。普通点击打开应用，无需授权。")
-                    .font(.system(size: 12)).foregroundStyle(Theme.muted)
-                if !store.accessibilityGranted {
-                    HStack {
-                        Text("排列窗口需要 macOS 辅助功能权限。")
-                            .font(.system(size: 12)).foregroundStyle(Theme.ink)
-                        Spacer()
-                        Button("去授权") { NativeDesktop.requestAccessibility() }
-                            .foregroundStyle(Theme.accent).font(.system(size: 12, weight: .medium))
-                    }.padding(15).background(.white, in: RoundedRectangle(cornerRadius: 10))
+        VStack(alignment: .leading, spacing: 10) {
+            Text("选择布局和应用，再点击底部按钮执行。预览和下拉选择不会启动应用。")
+                .font(.system(size: 12)).foregroundStyle(Theme.muted)
+            if !store.accessibilityGranted {
+                HStack {
+                    Text("排列窗口需要 macOS 辅助功能权限。")
+                        .font(.system(size: 12)).foregroundStyle(Theme.ink)
+                    Spacer()
+                    Button("去授权") { NativeDesktop.requestAccessibility() }
+                        .foregroundStyle(Theme.accent).font(.system(size: 12, weight: .medium))
+                }.padding(15).background(.white, in: RoundedRectangle(cornerRadius: 10))
+            }
+            ScrollView {
+                LayoutPanel().frame(maxWidth: 560).frame(maxWidth: .infinity)
+                    .padding(.bottom, 2)
+            }
+        }
+    }
+
+    private var layoutActions: some View {
+        VStack(alignment: .leading, spacing: 8) {
+            Divider().overlay(Theme.border)
+            HStack(spacing: 8) {
+                if store.isBusy {
+                    ProgressView().controlSize(.small)
+                    Text(store.busyLabel).foregroundStyle(Theme.ink)
+                } else if let banner = store.banner {
+                    Image(systemName: "exclamationmark.circle.fill").foregroundStyle(.orange)
+                    Text(banner).foregroundStyle(Theme.ink)
+                } else if let result = store.layoutResult {
+                    Image(systemName: "checkmark.circle.fill").foregroundStyle(Theme.green)
+                    Text(result).foregroundStyle(Theme.ink)
+                } else {
+                    Text(store.slots.contains("") ? "请为每个窗口位置选择不同的应用。" : "将启动所选应用，并排列它们的普通窗口。")
+                        .foregroundStyle(Theme.muted)
                 }
-                LayoutPanel().frame(maxWidth: 470).frame(maxWidth: .infinity)
+                Spacer(minLength: 0)
+            }.font(.system(size: 12)).fixedSize(horizontal: false, vertical: true)
+                .accessibilityIdentifier("layout.status")
+            HStack(spacing: 14) {
                 if store.canUndo {
-                    Button("恢复上一次分屏前的窗口位置") {
+                    Button("恢复原布局") {
                         Task { do { _ = try await store.restoreLayout() } catch { store.report(error) } }
                     }.disabled(store.isBusy).foregroundStyle(Theme.accent)
                 }
-                if let banner = store.banner {
-                    Text(banner).font(.system(size: 12)).foregroundStyle(.orange)
-                }
-            }.padding(.bottom, 8)
+                PrimaryButton(title: store.isBusy ? "正在执行…" : "启动并应用布局",
+                              disabled: store.isBusy || store.slots.contains("") || !store.accessibilityGranted) {
+                    Task { await store.applyCurrent() }
+                }.accessibilityIdentifier("layout.apply")
+            }
         }
     }
 

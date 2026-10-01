@@ -20,6 +20,7 @@ final class WorkspaceStore: ObservableObject {
     @Published private(set) var busyLabel = ""
     @Published private(set) var activities: [WorkspaceActivity] = []
     @Published var banner: String?
+    @Published private(set) var layoutResult: String?
     @Published private(set) var serverReady = false
     @Published private(set) var canUndo = false
     @Published var selectedScreen = 0
@@ -145,7 +146,7 @@ final class WorkspaceStore: ObservableObject {
     }
     private func begin(_ text: String) throws {
         guard !isBusy else { throw WorkbenchFailure("workspace_busy", "工作台正在执行另一个操作，请稍后再试。") }
-        isBusy = true; busyLabel = text; banner = nil
+        isBusy = true; busyLabel = text; banner = nil; layoutResult = nil
     }
     private func end() { isBusy = false; busyLabel = ""; refreshState() }
     func report(_ error: Error) {
@@ -173,7 +174,14 @@ final class WorkspaceStore: ObservableObject {
             throw WorkbenchFailure("accessibility_required", "请在系统设置中允许「轻桌」使用辅助功能，以读取和排列窗口。")
         }
         var running = NativeDesktop.running(app.id)
-        var windows = running.map { NativeDesktop.windows(for: $0) } ?? []
+        var readFailure: WorkbenchFailure?
+        func readWindows(_ running: NSRunningApplication) -> [DesktopWindow] {
+            do { let windows = try NativeDesktop.readWindows(for: running); readFailure = nil; return windows }
+            catch let error as WorkbenchFailure { readFailure = error; return [] }
+            catch { return [] }
+        }
+        var windows = running.map { readWindows($0) } ?? []
+        if let readFailure, readFailure.code != "window_read_busy" { throw readFailure }
         if windows.isEmpty {
             busyLabel = "正在启动 \(app.name)"
             running = try await NativeDesktop.launch(app, timeout: max(0.1, deadline.timeIntervalSinceNow))
@@ -181,14 +189,16 @@ final class WorkspaceStore: ObservableObject {
         while Date() < deadline {
             try Task.checkCancellation()
             if let running, !running.isTerminated {
-                windows = NativeDesktop.windows(for: running)
+                windows = readWindows(running)
                 if !windows.isEmpty { return try NativeDesktop.selectWindow(windows, reference: windowReference) }
+                if let readFailure, readFailure.code != "window_read_busy" { throw readFailure }
             }
-            busyLabel = "等待 \(app.name) 的窗口"
+            busyLabel = "等待 \(app.name) 的窗口（剩余 \(max(1, Int(ceil(deadline.timeIntervalSinceNow)))) 秒）"
             try await Task.sleep(for: .milliseconds(250))
             running = NativeDesktop.running(app.id)
         }
-        throw WorkbenchFailure("window_timeout", "\(app.name) 已收到启动请求，但窗口尚未就绪。请在应用中打开窗口后重试。")
+        if let readFailure { throw readFailure }
+        throw WorkbenchFailure("window_timeout", "\(app.name) 未返回可操作窗口。请先打开普通窗口、退出全屏，再重试。")
     }
 
     func ensureApp(_ id: String, timeout: Double = 15, reference: String? = nil) async throws -> [String: Any] {
@@ -250,7 +260,8 @@ final class WorkspaceStore: ObservableObject {
             throw error
         }
         undoWindows = targets; canUndo = true
-        record("已应用\(preset.title) · \(apps.map(\.name).joined(separator: " + "))")
+        let message = "已应用\(preset.title) · \(apps.map(\.name).joined(separator: " + "))"
+        layoutResult = message; record(message)
         let updated = targets.compactMap { window in
             NativeDesktop.running(window.appID).flatMap { app in NativeDesktop.windows(for: app).first { $0.id == window.id } }
         }
@@ -269,7 +280,7 @@ final class WorkspaceStore: ObservableObject {
         guard undoWindows.allSatisfy({ window in
             NativeDesktop.frame(window.element).map { LayoutGeometry.approximatelyEqual($0, window.frame) } == true
         }) else { throw WorkbenchFailure("restore_incomplete", "部分窗口无法恢复到原尺寸，请检查桌面。") }
-        canUndo = false; undoWindows = []; record("已恢复原布局")
+        canUndo = false; undoWindows = []; layoutResult = "已恢复原布局"; record("已恢复原布局")
         return ["ok": true, "verified": true]
     }
 

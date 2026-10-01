@@ -109,15 +109,47 @@ enum NativeDesktop {
     }
 
     static func windows(for app: NSRunningApplication) -> [DesktopWindow] {
-        guard accessibilityGranted, !app.isTerminated else { return [] }
+        (try? readWindows(for: app)) ?? []
+    }
+
+    static func readWindows(for app: NSRunningApplication) throws -> [DesktopWindow] {
+        guard accessibilityGranted else {
+            throw WorkbenchFailure("accessibility_required", "请在系统设置中允许「轻桌」使用辅助功能，然后重新打开轻桌。")
+        }
+        guard !app.isTerminated else { return [] }
         let application = AXUIElementCreateApplication(app.processIdentifier)
         AXUIElementSetMessagingTimeout(application, 0.5)
-        guard let elements = attribute(application, kAXWindowsAttribute) as? [AXUIElement] else { return [] }
+        var value: CFTypeRef?
+        let error = AXUIElementCopyAttributeValue(application, kAXWindowsAttribute as CFString, &value)
+        let name = app.localizedName ?? "应用"
+        switch error {
+        case .success: break
+        case .noValue: return []
+        case .apiDisabled:
+            throw WorkbenchFailure("accessibility_required", "系统未允许读取「\(name)」的窗口，请检查轻桌的辅助功能授权并重新打开轻桌。")
+        case .cannotComplete:
+            throw WorkbenchFailure("window_read_busy", "暂时无法读取「\(name)」的窗口，请将该应用切到前台后重试。")
+        case .attributeUnsupported:
+            throw WorkbenchFailure("window_not_supported", "「\(name)」没有提供可读取的窗口列表，暂不支持自动分屏。")
+        default:
+            throw WorkbenchFailure("window_read_failed", "读取「\(name)」的窗口失败，请重新打开该应用后重试（错误 \(error.rawValue)）。")
+        }
+        var elements = value as? [AXUIElement] ?? []
         let focused = attribute(application, kAXFocusedWindowAttribute)
+        // Some apps expose a focused/main window before publishing AXWindows.
+        if elements.isEmpty {
+            for key in [kAXFocusedWindowAttribute, kAXMainWindowAttribute] {
+                if let candidate = attribute(application, key),
+                   CFGetTypeID(candidate) == AXUIElementGetTypeID() {
+                    let window = candidate as! AXUIElement
+                    if !elements.contains(where: { CFEqual($0, window) }) { elements.append(window) }
+                }
+            }
+        }
         let cgWindows = (CGWindowListCopyWindowInfo(.optionAll, kCGNullWindowID) as? [[String: Any]] ?? [])
             .filter { ($0[kCGWindowOwnerPID as String] as? NSNumber)?.int32Value == app.processIdentifier &&
                       ($0[kCGWindowLayer as String] as? NSNumber)?.intValue == 0 }
-        return elements.compactMap { element in
+        let windows: [DesktopWindow] = elements.compactMap { element in
             AXUIElementSetMessagingTimeout(element, 0.5)
             guard let bounds = frame(element), bounds.width > 0, bounds.height > 0 else { return nil }
             let title = attribute(element, kAXTitleAttribute) as? String ?? app.localizedName ?? "窗口"
@@ -134,6 +166,10 @@ enum NativeDesktop {
                 minimized: attribute(element, kAXMinimizedAttribute) as? Bool ?? false,
                 focused: focused.map { CFEqual($0, element) } ?? false)
         }
+        if !elements.isEmpty && windows.isEmpty {
+            throw WorkbenchFailure("window_geometry_unavailable", "无法读取「\(name)」的窗口位置和尺寸。请将应用切到前台，确认是普通窗口后重试。")
+        }
+        return windows
     }
 
     static func selectWindow(_ windows: [DesktopWindow], reference: String? = nil) throws -> DesktopWindow {
